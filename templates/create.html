@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} Please add your data {% endblock %}</h1>
+    <form method="post">
+        <label for="name">Name</label>
+        <br>
+        <input type="text" name="name"
+               placeholder="Please input your name"
+               value="{{ request.form['name'] }}"></input>
+        <br>
+
+        <label for="weight">Weight</label>
+        <br>
+        <input name="weight"
+                  placeholder="Please input your weight in kg"
+                  >{{ request.form['weight'] }}</input>
+        <br>
+        <label for="height">Height</label>
+        <br>
+        <input name="height"
+                  placeholder="Please input your height in m"
+                  >{{ request.form['height'] }}</input>
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+{% endblock %}
