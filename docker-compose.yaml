@@ -1,0 +1,35 @@
+version: "3.7"
+
+services:
+  app:
+    image: bmiwebcalculator:latest
+    ports:
+      - 5000:5000
+    working_dir: /app
+    volumes:
+      - ./:/app
+    depends_on:
+      - mysql  
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: "0306"
+      MYSQL_DB: ibiza
+
+  mysql:
+    image: mysql:5.7
+    # volumes:
+    #   - ibiza-mysql-data:/var/lib/mysql
+    environment: 
+      MYSQL_ROOT_PASSWORD: "0306"
+      MYSQL_DATABASE: ibiza
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      - PMA_ARBITRARY=1
+
+# volumes:
+#   ibiza-mysql-data:

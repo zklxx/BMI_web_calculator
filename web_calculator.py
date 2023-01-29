@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, url_for, flash, redirect
+import mysql.connector
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '5705ba21b160ad17e59949db821541703dc565c813755fca'
@@ -13,10 +14,18 @@ def index():
 @app.route('/create/', methods=('GET', 'POST'))
 def create():
     if request.method == 'POST':
+        mydb = mysql.connector.connect(
+        host="mysql",
+        user="root",
+        password="0306",
+        database="ibiza"
+        )
+        mycursor = mydb.cursor()
         name = request.form['name']
         weight = request.form['weight']
         height = request.form['height']
-
+        sql = "INSERT INTO bmi (name, weight, height) VALUES (%s, %s, %s)"
+        val = (name, weight, height)
         if not name:
             flash('Name is required!')
         elif not weight:
@@ -24,6 +33,8 @@ def create():
         else:
             bmi = calculate_bmi(int(weight), float(height))
             messages.append({'name': name, 'content': bmi["comment"] + "%.2f" % bmi["BMI"]})
+            mycursor.execute(sql, val)
+            mydb.commit()
             return redirect(url_for('index'))
 
     return render_template('create.html')
@@ -52,3 +63,17 @@ def calculate_bmi(weight, height):
         else:
             return {"comment":"You are morbidly obese: ","BMI":BMI}
     
+
+
+mydb = mysql.connector.connect(
+  host="mysql",
+  user="root",
+  password="0306",
+  database="ibiza"
+)
+
+mycursor = mydb.cursor()
+
+mycursor.execute("CREATE TABLE bmi (name VARCHAR(255), weight INT, height FLOAT)")
+
+
