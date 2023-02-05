@@ -4,8 +4,8 @@
     <h1>{% block name %} BMI table {% endblock %}</h1>
     {% for message in messages %}
         <div class='message'>
-            <h3>{{ message['name'] }}</h3>
-            <p>{{ message['content'] }}</p>
+            <h3>{{ message[0] }}</h3>
+            <p>{{ "Your BMI is " + message[3]|string }}</p>
         </div>
     {% endfor %}
 {% endblock %}

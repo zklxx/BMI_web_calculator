@@ -1,38 +1,47 @@
 from flask import Flask, render_template, request, url_for, flash, redirect
 import mysql.connector
+import time
+
+mydb = mysql.connector.connect(
+  host="mysql",
+  user="root",
+  password="0306",
+  database="ibiza"
+)
+
+mycursor = mydb.cursor()
+
+mycursor.execute("DROP TABLE bmi") 
+mycursor.execute("CREATE TABLE bmi (name VARCHAR(255), weight INT, height FLOAT, bmi_score FLOAT, date DATETIME)")
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '5705ba21b160ad17e59949db821541703dc565c813755fca'
 
-messages = []
 
 @app.route('/')
 def index():
-    return render_template('index.html', messages=messages)
-
+    sql = "SELECT * FROM bmi ORDER BY date DESC LIMIT 1"
+    mycursor = mydb.cursor()
+    mycursor.execute(sql)
+    records = mycursor.fetchall()
+    return render_template('index.html', messages=records) #named argument
 
 @app.route('/create/', methods=('GET', 'POST'))
 def create():
     if request.method == 'POST':
-        mydb = mysql.connector.connect(
-        host="mysql",
-        user="root",
-        password="0306",
-        database="ibiza"
-        )
         mycursor = mydb.cursor()
         name = request.form['name']
         weight = request.form['weight']
         height = request.form['height']
-        sql = "INSERT INTO bmi (name, weight, height) VALUES (%s, %s, %s)"
-        val = (name, weight, height)
+        sql = "INSERT INTO bmi (name, weight, height, bmi_score, date) VALUES (%s, %s, %s, %s, %s)"
         if not name:
             flash('Name is required!')
         elif not weight:
             flash('Weight is required!')
+        elif not height:
+            flash('Height is required!')
         else:
-            bmi = calculate_bmi(int(weight), float(height))
-            messages.append({'name': name, 'content': bmi["comment"] + "%.2f" % bmi["BMI"]})
+            val = (name, weight, height, calculate_bmi(int(weight), float(height))["BMI"], time.strftime('%Y-%m-%d %H:%M:%S'))
             mycursor.execute(sql, val)
             mydb.commit()
             return redirect(url_for('index'))
@@ -64,16 +73,5 @@ def calculate_bmi(weight, height):
             return {"comment":"You are morbidly obese: ","BMI":BMI}
     
 
-
-mydb = mysql.connector.connect(
-  host="mysql",
-  user="root",
-  password="0306",
-  database="ibiza"
-)
-
-mycursor = mydb.cursor()
-
-mycursor.execute("CREATE TABLE bmi (name VARCHAR(255), weight INT, height FLOAT)")
 
 
