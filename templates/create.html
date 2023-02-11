@@ -9,7 +9,12 @@
                placeholder="Please input your name"
                value="{{ request.form['name'] }}"></input>
         <br>
-
+        <label for="age">Age</label>
+        <br>
+        <input name="age"
+                  placeholder="Please input your age"
+                  >{{ request.form['age'] }}</input>
+        <br>
         <label for="weight">Weight</label>
         <br>
         <input name="weight"

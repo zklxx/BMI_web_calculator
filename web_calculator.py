@@ -15,7 +15,7 @@ mycursor.execute("SHOW TABLES LIKE 'bmi'")
 test_schema = mycursor.fetchall()
 print(test_schema)
 if not test_schema:
-    mycursor.execute("CREATE TABLE bmi (name VARCHAR(255), weight INT, height FLOAT, bmi_score FLOAT, date DATETIME)")
+    mycursor.execute("CREATE TABLE bmi (name VARCHAR(255), age INT, weight INT, height FLOAT, bmi_score FLOAT, date DATETIME)")
 
 
 app = Flask(__name__)
@@ -35,17 +35,20 @@ def create():
     if request.method == 'POST':
         mycursor = mydb.cursor()
         name = request.form['name']
+        age = request.form["age"]
         weight = request.form['weight']
         height = request.form['height']
-        sql = "INSERT INTO bmi (name, weight, height, bmi_score, date) VALUES (%s, %s, %s, %s, %s)"
+        sql = "INSERT INTO bmi (name, age, weight, height, bmi_score, date) VALUES (%s, %s, %s, %s, %s, %s)"
         if not name:
             flash('Name is required!')
+        elif not age:
+            flash('Age is required!')
         elif not weight:
             flash('Weight is required!')
         elif not height:
             flash('Height is required!')
         else:
-            val = (name, weight, height, calculate_bmi(int(weight), float(height))["BMI"], time.strftime('%Y-%m-%d %H:%M:%S'))
+            val = (name, age, weight, height, calculate_bmi(int(weight), float(height))["BMI"], time.strftime('%Y-%m-%d %H:%M:%S'))
             mycursor.execute(sql, val)
             mydb.commit()
             return redirect(url_for('index'))
