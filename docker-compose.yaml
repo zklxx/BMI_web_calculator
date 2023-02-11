@@ -3,13 +3,16 @@ version: "3.7"
 services:
   app:
     image: bmiwebcalculator:latest
+    build:
+      dockerfile: Dockerfile
     ports:
       - 5000:5000
     working_dir: /app
     volumes:
       - ./:/app
     depends_on:
-      - mysql  
+      mysql:
+        condition: service_healthy  
     environment:
       MYSQL_HOST: mysql
       MYSQL_USER: root
@@ -23,6 +26,12 @@ services:
     environment: 
       MYSQL_ROOT_PASSWORD: "0306"
       MYSQL_DATABASE: ibiza
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   phpmyadmin:
     image: phpmyadmin
     restart: always

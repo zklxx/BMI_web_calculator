@@ -11,8 +11,12 @@ mydb = mysql.connector.connect(
 
 mycursor = mydb.cursor()
 
-mycursor.execute("DROP TABLE bmi") 
-mycursor.execute("CREATE TABLE bmi (name VARCHAR(255), weight INT, height FLOAT, bmi_score FLOAT, date DATETIME)")
+mycursor.execute("SHOW TABLES LIKE 'bmi'") 
+test_schema = mycursor.fetchall()
+print(test_schema)
+if not test_schema:
+    mycursor.execute("CREATE TABLE bmi (name VARCHAR(255), weight INT, height FLOAT, bmi_score FLOAT, date DATETIME)")
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '5705ba21b160ad17e59949db821541703dc565c813755fca'
