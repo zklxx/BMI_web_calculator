@@ -7,7 +7,6 @@ import seaborn as sns
 
 #TODO 
 #SQL injection protection
-#Data validation, divide by 0
 
 mydb = mysql.connector.connect(
   host="mysql",
@@ -46,24 +45,23 @@ def index():
 def create():
     if request.method == 'POST':
         mycursor = mydb.cursor()
-        name = request.form['name']
-        age = request.form["age"]
-        weight = request.form['weight']
-        height = request.form['height']
-        sql = "INSERT INTO bmi (name, age, weight, height, bmi_score, date) VALUES (%s, %s, %s, %s, %s, %s)"
-        if not name:
-            flash('Name is required!')
-        elif not age:
-            flash('Age is required!')
-        elif not weight:
-            flash('Weight is required!')
-        elif not height:
-            flash('Height is required!')
-        else:
-            val = (name, age, weight, height, calculate_bmi(int(weight), float(height))["BMI"], time.strftime('%Y-%m-%d %H:%M:%S'))
-            mycursor.execute(sql, val)
-            mydb.commit()
-            return redirect(url_for('index'))
+        if not (request.form['name'] and request.form['age'] and request.form['weight'] and request.form['height']):
+            flash('All fields required!')
+        else: 
+            name = request.form['name']
+            age = int(request.form["age"]) if request.form["age"] else request.form["age"]
+            weight = int(request.form['weight']) if request.form['weight'] else request.form['weight']
+            height = float(request.form['height']) if request.form['height'] else request.form['height']
+            sql = "INSERT INTO bmi (name, age, weight, height, bmi_score, date) VALUES (%s, %s, %s, %s, %s, %s)"
+            if not (age > 0 and weight > 0 and height > 0):
+                flash('Age, weight and height must be positive numbers!')
+                request.form = {}
+                return render_template('create.html')
+            else:
+                val = (name, age, weight, height, calculate_bmi(weight, height), time.strftime('%Y-%m-%d %H:%M:%S'))
+                mycursor.execute(sql, val)
+                mydb.commit()
+                return redirect(url_for('index'))
 
     return render_template('create.html')
 
