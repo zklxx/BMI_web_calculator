@@ -1,6 +1,13 @@
 from flask import Flask, render_template, request, url_for, flash, redirect
 import mysql.connector
 import time
+import pandas as pd
+import matplotlib.pyplot as plt 
+import seaborn as sns
+
+#TODO 
+#SQL injection protection
+#Data validation, divide by 0
 
 mydb = mysql.connector.connect(
   host="mysql",
@@ -18,17 +25,22 @@ if not test_schema:
     mycursor.execute("CREATE TABLE bmi (name VARCHAR(255), age INT, weight INT, height FLOAT, bmi_score FLOAT, date DATETIME)")
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/files', static_folder="files")
 app.config['SECRET_KEY'] = '5705ba21b160ad17e59949db821541703dc565c813755fca'
 
 
 @app.route('/')
 def index():
-    sql = "SELECT * FROM bmi ORDER BY date DESC LIMIT 1"
+    sql = "SELECT * FROM bmi ORDER BY date DESC"
     mycursor = mydb.cursor()
     mycursor.execute(sql)
     records = mycursor.fetchall()
-    return render_template('index.html', messages=records) #named argument
+    data = map(lambda a: (a[0], int(a[1]), int(a[2]), float(a[3]), float(a[4]), time.strptime(a[5], '%Y-%m-%d %H:%M:%S')), records)  
+    df = pd.DataFrame(records, columns=("name", "age", "weight", "height", "bmi_score", "date")) 
+    plot = sns.relplot(x="bmi_score", y="age", data=df, kind="scatter")
+    plot_fig = plot.fig
+    plot_fig.savefig("files/scatterplot.png")
+    return render_template('index.html', messages=records, image_path="/files/scatterplot.png") #named argument
 
 @app.route('/create/', methods=('GET', 'POST'))
 def create():
@@ -60,25 +72,7 @@ def about():
     return render_template('about.html')
 
 def calculate_bmi(weight, height):
-    BMI = weight/height**2
-    if BMI > 0:
-        if(BMI<16):
-            return {"comment":"You have severe thinness: ","BMI":BMI}
-        elif(BMI<=16.99):
-            return {"comment":"You have moderate thinness: ","BMI":BMI}
-        elif(BMI<=18.49):
-            return {"comment":"You are underweight: ","BMI":BMI}
-        elif(BMI<=24.99):
-            return {"comment":"You have normal weight: ","BMI":BMI}
-        elif(BMI<=29.99):
-            return {"comment":"You are overweight: ","BMI":BMI}
-        elif(BMI<=34.99):
-            return {"comment":"You are obese: ","BMI":BMI}
-        elif(BMI<=39.99):
-            return {"comment":"You are severely obese: ","BMI":BMI}
-        else:
-            return {"comment":"You are morbidly obese: ","BMI":BMI}
-    
+    return weight/height**2    
 
 
 

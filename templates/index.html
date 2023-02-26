@@ -2,6 +2,7 @@
 
 {% block content %}
     <h1>{% block name %} BMI table {% endblock %}</h1>
+    <img src="{{ image_path }}" alt="Image not found!" width="640" height="480" />
     {% for message in messages %}
         <div class='message'>
             <h3>{{ message[0] }}</h3>
